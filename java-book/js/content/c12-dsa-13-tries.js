@@ -115,7 +115,7 @@ class WordDictionary {
 <table class="tbl">
 <tr><th>idx</th><th>char</th><th>action</th></tr>
 <tr><td>0</td><td>.</td><td>fan out: try children 'b','d','m' at root</td></tr>
-<tr><td>1 (via b)</td><td>a</td><td>dfs("​.ad",2,node_ba) — follow 'a' pointer</td></tr>
+<tr><td>1 (via b)</td><td>a</td><td>dfs(".ad",2,node_ba) — follow 'a' pointer</td></tr>
 <tr><td>2 (via ba)</td><td>d</td><td>dfs(...,3,node_bad) — follow 'd' pointer</td></tr>
 <tr><td>3</td><td>—</td><td>idx==len → node_bad.isEnd == true → returns true</td></tr>
 </table>
