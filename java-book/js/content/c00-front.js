@@ -8,6 +8,7 @@
   B.part('p4', 'Part IV · Spring Boot & Microservices', '#2e7d32');
   B.part('p5', 'Part V · Data & System Design (HLD)', '#c0392b');
   B.part('p6', 'Part VI · DevOps, Docker & Cloud', '#00695c');
+  B.part('pd', 'Part VII · DSA Problem Bank', '#d81b60');
   B.part('pf', 'Finale · Interview Playbook', '#e76f00');
 
   /* ---- Spread 0 : About / how to use ---- */

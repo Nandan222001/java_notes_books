@@ -70,11 +70,13 @@ window.HL = (function () {
 
   /* decorate every <pre class="code"><code data-lang="…"> in a rendered page */
   function decorate(rootEl) {
-    rootEl.querySelectorAll('pre.code > code[data-lang]').forEach(el => {
+    rootEl.querySelectorAll('pre.code > code').forEach(el => {
       if (el.dataset.hldone) return;
+      const lang = el.getAttribute('data-lang') || el.parentElement.getAttribute('data-lang');
+      if (!lang) return;
       el.dataset.hldone = '1';
       const raw = el.textContent.replace(/^[\r\n]+/, '').replace(/\s+$/, '');
-      el.innerHTML = highlight(raw, el.getAttribute('data-lang'));
+      el.innerHTML = highlight(raw, lang);
     });
   }
   return { highlight, decorate, escape: esc };
