@@ -146,39 +146,49 @@ function goTo(target, instant) {
   } else {
     if (target > f) flipForward(); else flipBackward();
   }
-  mFront = true; applyPan();
+  mFront = true; applyPan(true);
 }
 
 /* ---------------- mobile single-page navigation ---------------- */
-var isMobile = false;
+var isMobile = false, curS = 1;
 function checkMobile() {
   var was = isMobile;
   isMobile = window.matchMedia('(max-width:900px)').matches;
   if (isMobile && !was) mFront = true;   /* entering mobile mode: land on the front/right page */
 }
-function applyPan() {
-  if (!isMobile) { panEl.style.transform = ''; return; }
-  var w = bookEl.getBoundingClientRect().width;
-  panEl.style.transform = 'translateX(' + (mFront ? -w / 4 : w / 4) + 'px)';
+function applyPan(instant) {
+  if (!isMobile) { panEl.style.transition = ''; panEl.style.transform = ''; return; }
+  var q = (1210 * curS) / 4;   /* derived from the scale we set, not re-measured — avoids stale layout reads */
+  var t = 'translateX(' + (mFront ? -q : q) + 'px)';
+  if (instant) {
+    panEl.style.transition = 'none';
+    panEl.style.transform = t;
+    void panEl.offsetWidth;   /* flush so the transition:none takes effect before we restore it */
+    panEl.style.transition = '';
+  } else {
+    panEl.style.transform = t;
+  }
 }
 function mobileNext() {
   if (mFront) {
     if (f >= N) { Snd.thump(); return; }
-    flipForward(); mFront = false;
+    mFront = false; applyPan(true);   /* snap to the target page's slot instantly, then let the flip animate into it */
+    flipForward();
   } else {
     if (f >= N) { Snd.thump(); return; }
-    mFront = true; Snd.tick();
+    mFront = true; Snd.tick(); applyPan();
   }
-  applyPan(); syncUI();
+  syncUI();
 }
 function mobilePrev() {
   if (mFront) {
     if (f < 1) { Snd.thump(); return; }
-    mFront = false; Snd.tick();
+    mFront = false; Snd.tick(); applyPan();
   } else {
-    flipBackward(); mFront = true;
+    mFront = true; applyPan(true);
+    flipBackward();
   }
-  applyPan(); syncUI();
+  syncUI();
 }
 function goNext() { if (isMobile) mobileNext(); else flipForward(); }
 function goPrev() { if (isMobile) mobilePrev(); else flipBackward(); }
@@ -391,8 +401,9 @@ function fit() {
   var r = wrapEl.getBoundingClientRect();
   var bw = isMobile ? 605 : 1210;
   var s = Math.min(r.width / bw, r.height / 800, isMobile ? 1.3 : 1.06);
-  bookEl.style.setProperty('--s', Math.max(0.28, s).toFixed(3));
-  applyPan();
+  curS = Math.max(0.28, s);
+  bookEl.style.setProperty('--s', curS.toFixed(3));
+  applyPan(true);
 }
 window.addEventListener('resize', fit);
 
