@@ -3,7 +3,7 @@
 'use strict';
 var $ = function (s) { return document.querySelector(s); };
 var BOOK = window.BOOK, HL = window.HL, Snd = window.BookSound;
-var bookEl = $('#book'), wrapEl = $('#bookWrap');
+var bookEl = $('#book'), wrapEl = $('#bookWrap'), panEl = $('#bookPan');
 
 /* ---------------- cover & back cover ---------------- */
 var COVER = { raw: true, cls: 'cover', html:
@@ -102,6 +102,7 @@ for (var j = 0; j < N; j++) {
 
 /* ---------------- flip state machine ---------------- */
 var f = 0;   /* number of flipped sheets */
+var mFront = true;   /* mobile single-page mode: true = right/front page of spread f, false = left/back page */
 
 function applyZ() {
   for (var i = 0; i < N; i++) leaves[i].style.zIndex = String((i < f ? i + 5 : N - i) + 5);
@@ -145,7 +146,42 @@ function goTo(target, instant) {
   } else {
     if (target > f) flipForward(); else flipBackward();
   }
+  mFront = true; applyPan();
 }
+
+/* ---------------- mobile single-page navigation ---------------- */
+var isMobile = false;
+function checkMobile() {
+  var was = isMobile;
+  isMobile = window.matchMedia('(max-width:900px)').matches;
+  if (isMobile && !was) mFront = true;   /* entering mobile mode: land on the front/right page */
+}
+function applyPan() {
+  if (!isMobile) { panEl.style.transform = ''; return; }
+  var w = bookEl.getBoundingClientRect().width;
+  panEl.style.transform = 'translateX(' + (mFront ? -w / 4 : w / 4) + 'px)';
+}
+function mobileNext() {
+  if (mFront) {
+    if (f >= N) { Snd.thump(); return; }
+    flipForward(); mFront = false;
+  } else {
+    if (f >= N) { Snd.thump(); return; }
+    mFront = true; Snd.tick();
+  }
+  applyPan(); syncUI();
+}
+function mobilePrev() {
+  if (mFront) {
+    if (f < 1) { Snd.thump(); return; }
+    mFront = false; Snd.tick();
+  } else {
+    flipBackward(); mFront = true;
+  }
+  applyPan(); syncUI();
+}
+function goNext() { if (isMobile) mobileNext(); else flipForward(); }
+function goPrev() { if (isMobile) mobilePrev(); else flipBackward(); }
 
 /* ---------------- UI refs & sync ---------------- */
 var scrub = $('#scrubber'), pageLabel = $('#pageLabel'), btnPrev = $('#btnPrev'), btnNext = $('#btnNext'),
@@ -226,13 +262,27 @@ document.addEventListener('click', function (e) {
 });
 bookEl.addEventListener('click', function (e) {
   if (e.target.closest('[data-go]')) return;
-  if (f === 0 && e.target.closest('.face.front .cover')) flipForward();
+  if (f === 0 && e.target.closest('.face.front .cover')) goNext();
   else if (f === N && e.target.closest('.face.back .backcov')) goTo(N - 1, true);
 });
-$('#hsPrev').addEventListener('click', flipBackward);
-$('#hsNext').addEventListener('click', flipForward);
-btnPrev.addEventListener('click', flipBackward);
-btnNext.addEventListener('click', flipForward);
+$('#hsPrev').addEventListener('click', goPrev);
+$('#hsNext').addEventListener('click', goNext);
+btnPrev.addEventListener('click', goPrev);
+btnNext.addEventListener('click', goNext);
+
+/* ---------------- touch swipe (mobile single-page mode) ---------------- */
+var touchX = null;
+wrapEl.addEventListener('touchstart', function (e) {
+  if (!isMobile || e.touches.length !== 1) { touchX = null; return; }
+  touchX = e.touches[0].clientX;
+}, { passive: true });
+wrapEl.addEventListener('touchend', function (e) {
+  if (touchX == null) return;
+  var dx = e.changedTouches[0].clientX - touchX;
+  touchX = null;
+  if (Math.abs(dx) < 40) return;
+  if (dx < 0) goNext(); else goPrev();
+});
 scrub.addEventListener('input', function () { goTo(parseInt(scrub.value, 10), true); });
 
 /* ---------------- sound / theme / fullscreen ---------------- */
@@ -317,8 +367,8 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') { closeSearch(); drawer.classList.remove('open'); if (typing) e.target.blur(); return; }
   if (typing) return;
   switch (e.key) {
-    case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); flipForward(); break;
-    case 'ArrowLeft': case 'PageUp': e.preventDefault(); flipBackward(); break;
+    case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); goNext(); break;
+    case 'ArrowLeft': case 'PageUp': e.preventDefault(); goPrev(); break;
     case 'Home': e.preventDefault(); goTo(0, true); break;
     case 'End': e.preventDefault(); goTo(N, true); break;
     case '/': e.preventDefault(); searchBox.focus(); searchBox.select(); break;
@@ -332,9 +382,12 @@ document.addEventListener('keydown', function (e) {
 
 /* ---------------- responsive fit ---------------- */
 function fit() {
+  checkMobile();
   var r = wrapEl.getBoundingClientRect();
-  var s = Math.min(r.width / 1210, r.height / 800, 1.06);
+  var bw = isMobile ? 605 : 1210;
+  var s = Math.min(r.width / bw, r.height / 800, isMobile ? 1.3 : 1.06);
   bookEl.style.setProperty('--s', Math.max(0.28, s).toFixed(3));
+  applyPan();
 }
 window.addEventListener('resize', fit);
 
