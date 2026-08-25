@@ -5,8 +5,8 @@ B.chapter('pd', 35, 'DSA: Stack & Queue');
 
 /* Problem 001 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q001 · Easy',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 001 · EASY</span>Valid Parentheses</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q031 · Easy',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 031 · EASY</span>Valid Parentheses</h2>
 <div class="pillrow"><span class="pill" style="--pc:#2e7d32">EASY</span><span class="pill">Stack</span><span class="pill">String</span></div>
 <p class="dropcap">Given a string <code>s</code> containing just the characters <code>()[]{}</code>, determine if the input string is valid — every opening bracket is closed by the same type of bracket, in the correct order.</p>
 <h3 class="sec">Example</h3>
@@ -46,8 +46,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 002 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q002 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 002 · MEDIUM</span>Min Stack</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q032 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 032 · MEDIUM</span>Min Stack</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Stack</span><span class="pill">Design</span></div>
 <p class="dropcap">Design a stack that supports <code>push</code>, <code>pop</code>, <code>top</code>, and retrieving the minimum element — all in O(1) time.</p>
 <h3 class="sec">Example</h3>
@@ -91,8 +91,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 003 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q003 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 003 · MEDIUM</span>Evaluate Reverse Polish Notation</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q033 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 033 · MEDIUM</span>Evaluate Reverse Polish Notation</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Stack</span><span class="pill">Math</span></div>
 <p class="dropcap">Evaluate an arithmetic expression given in Reverse Polish Notation (postfix). Valid operators are <code>+ - * /</code>; division between two integers truncates toward zero.</p>
 <h3 class="sec">Example</h3>
@@ -133,8 +133,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 004 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q004 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 004 · MEDIUM</span>Daily Temperatures</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q034 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 034 · MEDIUM</span>Daily Temperatures</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Monotonic Stack</span><span class="pill">Array</span></div>
 <p class="dropcap">Given an array <code>temperatures</code>, return an array <code>answer</code> where <code>answer[i]</code> is the number of days you'd have to wait after day <code>i</code> to get a warmer temperature. If there is no future warmer day, <code>answer[i] = 0</code>.</p>
 <h3 class="sec">Example</h3>
@@ -177,8 +177,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 005 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q005 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 005 · MEDIUM</span>Next Greater Element I</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q035 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 035 · MEDIUM</span>Next Greater Element I</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Monotonic Stack</span><span class="pill">Hash Map</span></div>
 <p class="dropcap">Given two arrays <code>nums1</code> and <code>nums2</code> (distinct elements, <code>nums1</code> is a subset of <code>nums2</code>), for each element of <code>nums1</code> find the next greater element to its right in <code>nums2</code>. If none exists, output -1.</p>
 <h3 class="sec">Example</h3>
@@ -219,8 +219,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 006 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q006 · Hard',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 006 · HARD</span>Largest Rectangle in Histogram</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q036 · Hard',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 036 · HARD</span>Largest Rectangle in Histogram</h2>
 <div class="pillrow"><span class="pill" style="--pc:#c0392b">HARD</span><span class="pill">Monotonic Stack</span><span class="pill">Array</span></div>
 <p class="dropcap">Given an array <code>heights</code> representing histogram bar heights where each bar has width 1, find the area of the largest rectangle that fits entirely within the histogram.</p>
 <h3 class="sec">Example</h3>
@@ -264,8 +264,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 007 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q007 · Easy',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 007 · EASY</span>Implement Queue using Stacks</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q037 · Easy',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 037 · EASY</span>Implement Queue using Stacks</h2>
 <div class="pillrow"><span class="pill" style="--pc:#2e7d32">EASY</span><span class="pill">Stack</span><span class="pill">Queue</span><span class="pill">Design</span></div>
 <p class="dropcap">Implement a FIFO queue using only two stacks. Support <code>push(x)</code>, <code>pop()</code>, <code>peek()</code>, and <code>empty()</code> using standard stack operations.</p>
 <h3 class="sec">Example</h3>
@@ -307,8 +307,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 008 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q008 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 008 · MEDIUM</span>Asteroid Collision</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q038 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 038 · MEDIUM</span>Asteroid Collision</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Stack</span><span class="pill">Simulation</span></div>
 <p class="dropcap">Given an array <code>asteroids</code> where the sign indicates direction (positive = right, negative = left) and magnitude = size, simulate collisions: two asteroids moving toward each other collide, the smaller explodes, equal sizes both explode. Return the state after all collisions.</p>
 <h3 class="sec">Example</h3>
@@ -351,8 +351,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 009 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q009 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 009 · MEDIUM</span>Decode String</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q039 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 039 · MEDIUM</span>Decode String</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Stack</span><span class="pill">String</span><span class="pill">Recursion</span></div>
 <p class="dropcap">Given an encoded string in the form <code>k[encoded_string]</code> — meaning the <code>encoded_string</code> inside brackets is repeated <code>k</code> times — return the fully decoded string. Encodings can be nested.</p>
 <h3 class="sec">Example</h3>
@@ -403,8 +403,8 @@ html: `<h3 class="sec">Approach</h3>
 
 /* Problem 010 */
 B.spread(
-{ kicker: 'DSA · STACK & QUEUE', head: 'Q010 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 010 · MEDIUM</span>Basic Calculator II</h2>
+{ kicker: 'DSA · STACK & QUEUE', head: 'Q040 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 040 · MEDIUM</span>Basic Calculator II</h2>
 <div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Stack</span><span class="pill">String</span><span class="pill">Math</span></div>
 <p class="dropcap">Evaluate a simple expression string containing non-negative integers, <code>+ - * /</code>, and spaces (no parentheses). Integer division truncates toward zero. Standard operator precedence applies (<code>*</code> and <code>/</code> before <code>+</code> and <code>-</code>).</p>
 <h3 class="sec">Example</h3>
