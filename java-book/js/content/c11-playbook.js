@@ -1,12 +1,12 @@
-/* ===== CHAPTERS 40–41 · Interview Playbook & Finale ===== */
+/* ===== CHAPTERS 48–49 · Interview Playbook & Finale ===== */
 (function () {
 var B = window.BOOK;
-B.chapter('pf', 40, 'The Interview Playbook');
+B.chapter('pf', 48, 'The Interview Playbook');
 
 /* spread 1 */
 B.spread(
-{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 40 · Strategy',
-html: `<h2 class="chap"><span class="chnum">CHAPTER 40</span>The Playbook — Turning Knowledge Into Offers 🎯</h2>
+{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 48 · Strategy',
+html: `<h2 class="chap"><span class="chnum">CHAPTER 48</span>The Playbook — Turning Knowledge Into Offers 🎯</h2>
 <h3 class="sec">Resume bullets that survive 6-second scans</h3>
 <p><b>X-Y-Z:</b> “Built <em>X</em> using <em>Y</em> improving <em>Z by N%</em>.” Numbers beat adjectives; projects beat course lists; GitHub link must show clean commits.</p>
 <h3 class="sec">DSA rounds — Java-specific edge</h3>
@@ -34,10 +34,10 @@ html: `<div class="figframe"><div class="figtitle">Four weeks, four battles 💪
 <div class="callout tip"><span class="ct">💡 Mock cadence</span>2 mocks/week minimum (Pramp/peers). Record yourself — filler words and dead air vanish fast when confronted.</div>
 <div class="callout hook"><span class="ct">🎯 Memory hook</span>“An interview is open-book 📖 — if the book is your prepared stories.”</div>`});
 
-/* Chapter 40 · spread 2 — the rounds & the close */
+/* Chapter 48 · spread 2 — the rounds & the close */
 B.spread(
-{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 40 · Round Day',
-html: `<h2 class="chap"><span class="chnum">CHAPTER 40 · CONT.</span>Round-Day Script &amp; The Close</h2>
+{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 48 · Round Day',
+html: `<h2 class="chap"><span class="chnum">CHAPTER 48 · CONT.</span>Round-Day Script &amp; The Close</h2>
 <h3 class="sec">HLD round, minute-by-minute script</h3>
 <p>0–5 restate requirements &amp; assumptions ➜ 5–10 estimates aloud ➜ 10–15 API + schema ➜ 15–30 draw boxes while NARRATING choices ➜ 30–40 deep-dive the risky part ➜ 40–45 bottlenecks, monitoring, “what would I change at 10×”.</p>
 <h3 class="sec">Saying “I don't know” like a senior</h3>
@@ -68,11 +68,11 @@ html: `<div class="grid g2">
 <div class="qa"><div class="q">Interviewer keeps pushing deeper?</div><div class="a">That's a GOOD sign — they're probing ceiling. Stay curious, think out loud, concede unknown edges honestly.</div></div>
 </div>
 <div class="callout hook"><span class="ct">🎯 Memory hook</span>“Companies hire SIGNALS: clarity, honesty, momentum. Broadcast all three 🔊.”</div>`});
-/* ===== CHAPTER 41 · The Finish Line ===== */
-B.chapter('pf', 41, 'The Finish Line');
+/* ===== CHAPTER 49 · The Finish Line ===== */
+B.chapter('pf', 49, 'The Finish Line');
 B.spread(
 { kicker: 'EPILOGUE', head: 'You Made It',
-html: `<h2 class="chap"><span class="chnum">CHAPTER 41 · THE END</span>A Letter To The Reader Who Finished</h2>
+html: `<h2 class="chap"><span class="chnum">CHAPTER 49 · THE END</span>A Letter To The Reader Who Finished</h2>
 <p class="dropcap">If you've turned this final page, you hold more interview-ready Java knowledge than most engineers refresh yearly. From a humble <code>public static void main</code> to circuit breakers singing across microservices — the map is yours. What separates offers from wishes is only <strong>repetition and reps</strong>.</p>
 <h3 class="sec">Build these three portfolio projects 🛠️</h3>
 <ul>
