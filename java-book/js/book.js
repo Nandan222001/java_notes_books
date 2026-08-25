@@ -1,0 +1,356 @@
+/* ================= Book engine — sheets, flips, navigation ================= */
+(function () {
+'use strict';
+var $ = function (s) { return document.querySelector(s); };
+var BOOK = window.BOOK, HL = window.HL, Snd = window.BookSound;
+var bookEl = $('#book'), wrapEl = $('#bookWrap');
+
+/* ---------------- cover & back cover ---------------- */
+var COVER = { raw: true, cls: 'cover', html:
+  '<div class="cov-edition">FIRST EDITION</div>' +
+  '<svg class="cov-cup" viewBox="0 0 120 120" aria-hidden="true">' +
+    '<g stroke="#c9a227" stroke-width="4" stroke-linecap="round" fill="none">' +
+      '<path d="M32 54 h46 v20 a17 17 0 0 1 -17 17 h-12 a17 17 0 0 1 -17 -17 z" fill="#241206"/>' +
+      '<path d="M78 58 c15 0 15 17 0 17"/>' +
+      '<path d="M26 98 h58"/>' +
+      '<path d="M45 42 c-5 -8 6 -11 2 -19" opacity=".85"/>' +
+      '<path d="M57 41 c-5 -8 6 -11 2 -19"/>' +
+      '<path d="M69 42 c-5 -8 6 -11 2 -19" opacity=".65"/>' +
+    '</g></svg>' +
+  '<h1 class="cov-title">JAVA<em>ZERO&nbsp;&nbsp;→&nbsp;&nbsp;FAANG</em></h1>' +
+  '<p class="cov-sub">The complete interview book — Core · OOP · Collections · Streams · Threads · JVM · SOLID · Patterns · LLD · Spring Boot · Microservices · SQL · HLD · Docker · Kubernetes · Cloud</p>' +
+  '<div class="cov-line"></div>' +
+  '<p class="cov-sub" style="font-size:13px;letter-spacing:.34em;font-style:normal;color:#b08d4a;margin-top:0">THEORY LEFT &nbsp;·&nbsp; VISUALS RIGHT</p>' };
+
+var BACKCOV = { raw: true, cls: 'backcov', html:
+  '<svg viewBox="0 0 120 120" style="width:84px;filter:drop-shadow(0 8px 16px #000a)" aria-hidden="true">' +
+    '<g stroke="#c9a227" stroke-width="4" stroke-linecap="round" fill="none">' +
+      '<path d="M32 54 h46 v20 a17 17 0 0 1 -17 17 h-12 a17 17 0 0 1 -17 -17 z" fill="#241206"/>' +
+      '<path d="M78 58 c15 0 15 17 0 17"/><path d="M26 98 h58"/>' +
+      '<path d="M57 41 c-5 -8 6 -11 2 -19"/></g></svg>' +
+  '<p class="bc-blurb" style="margin-top:18px"><b>One book.</b> Every Java interview topic — from your first <b>public static void main</b> to designing <b>Uber’s backend</b>. Theory on the left, pictures on the right, zero fluff.</p>' +
+  '<p class="bc-blurb" style="font-size:14px">“Any fool can write code that a computer can understand. Good programmers write code that humans can understand.”<br><b style="font-size:13px;letter-spacing:.1em">— MARTIN FOWLER</b></p>' +
+  '<div class="bc-barcode"></div><div class="bc-price">₹ 0 · FREE FOREVER · SHARE WIDELY</div>' };
+
+/* ---------------- table of contents ---------------- */
+(function buildToc() {
+  var sides = [[], []];
+  BOOK.chapters.forEach(function (c) {
+    sides[(c.partId === 'p1' || c.partId === 'p2' || c.partId === 'p3') ? 0 : 1].push(c);
+  });
+  function rows(list) {
+    return list.map(function (c) {
+      return '<div class="toc-row" data-go="' + c.idx + '"><span class="toc-num">' +
+        String(c.num).padStart(2, '0') + '</span><span class="toc-t">' + c.title +
+        '</span><span class="toc-dots"></span><span class="toc-pg">' + (2 * c.idx + 1) + '</span></div>';
+    }).join('');
+  }
+  function blocks(side) {
+    return BOOK.order
+      .filter(function (pid) { return sides[side].some(function (c) { return c.partId === pid; }); })
+      .map(function (pid) {
+        var P = BOOK.parts[pid];
+        return '<div class="toc-part-h" style="--tc:' + P.color + '"><i></i>' + P.label + '</div>' +
+          rows(sides[side].filter(function (c) { return c.partId === pid; }));
+      }).join('');
+  }
+  BOOK.spreads[1].left.html =
+    '<ul class="tree" style="margin-bottom:10px"><li class="rt">☕ About this book <span class="dts">· p.1</span></li>' +
+    '<li class="rt">📑 Contents <span class="dts">· p.3</span></li></ul>' + blocks(0) +
+    '<div class="toc-note">📖 Click any chapter to jump straight to it. Page numbers are printed on the outer corners.</div>';
+  BOOK.spreads[1].right.html = blocks(1) +
+    '<div class="toc-note">🔖 Press <strong>☆ Mark</strong> while reading to bookmark a spread — bookmarks appear in the ☰ Contents drawer for lightning-fast revision.</div>';
+})();
+
+/* ---------------- flatten spreads → pages ---------------- */
+var pages = [COVER];
+BOOK.spreads.forEach(function (sp) {
+  pages.push({ kicker: sp.left.kicker || '', head: sp.left.head || '', html: sp.left.html });
+  pages.push({ kicker: sp.right.kicker || '', head: sp.right.head || '', html: sp.right.html });
+});
+pages.push(BACKCOV);
+for (var i = 1; i < pages.length - 1; i++) pages[i].num = i;
+
+var N = Math.floor(pages.length / 2);   /* number of physical sheets */
+var leaves = [];
+
+function faceHTML(p, side) {
+  if (p.raw) return '<div class="page ' + p.cls + '">' + p.html + '</div><i class="fold"></i>';
+  var brand = '<span>☕ JAVA · ZERO→FAANG</span>';
+  var num = '<span class="num">' + (p.num != null ? 'p. ' + p.num : '') + '</span>';
+  var head = '<div class="pg-head"><span>' + (p.kicker || '') + '</span><span class="hd-r">' + (p.head || '') + '</span></div>';
+  var foot = '<div class="pg-foot' + (side === 'front' ? ' pg-r-foot' : '') + '">' +
+    (side === 'front' ? brand + num : num + brand) + '</div>';
+  return '<div class="page">' + head + '<div class="pg-body">' + p.html + '</div>' + foot + '</div><i class="fold"></i>';
+}
+
+for (var j = 0; j < N; j++) {
+  var leaf = document.createElement('div');
+  leaf.className = 'leaf'; leaf.dataset.i = j;
+  var fr = document.createElement('div'); fr.className = 'face front';
+  fr.innerHTML = faceHTML(pages[2 * j], 'front');
+  var bk = document.createElement('div'); bk.className = 'face back';
+  bk.innerHTML = faceHTML(pages[2 * j + 1], 'back');
+  HL.decorate(fr); HL.decorate(bk);
+  leaf.appendChild(fr); leaf.appendChild(bk);
+  leaf.addEventListener('transitionend', function (e) {
+    if (e.propertyName === 'transform') applyZ();
+  });
+  bookEl.appendChild(leaf);
+  leaves.push(leaf);
+}
+
+/* ---------------- flip state machine ---------------- */
+var f = 0;   /* number of flipped sheets */
+
+function applyZ() {
+  for (var i = 0; i < N; i++) leaves[i].style.zIndex = String((i < f ? i + 5 : N - i) + 5);
+}
+applyZ();
+
+function flipForward() {
+  if (f >= N) { Snd.thump(); return; }
+  var l = leaves[f];
+  l.classList.remove('noanim');
+  l.style.zIndex = String(2 * N + 40);
+  l.classList.add('flipped');
+  f++;
+  Snd.flip();
+  if (f === N) setTimeout(function () { Snd.thump(); }, 700);
+  syncUI();
+}
+function flipBackward() {
+  if (f <= 0) { Snd.thump(); return; }
+  f--;
+  var l = leaves[f];
+  l.classList.remove('noanim');
+  l.style.zIndex = String(2 * N + 40);
+  l.classList.remove('flipped');
+  Snd.flip();
+  syncUI();
+}
+function goTo(target, instant) {
+  target = Math.max(0, Math.min(N, target));
+  if (target === f) return;
+  if (instant || Math.abs(target - f) > 1) {
+    leaves.forEach(function (l, i) {
+      l.classList.add('noanim');
+      l.classList.toggle('flipped', i < target);
+    });
+    void bookEl.offsetWidth;
+    requestAnimationFrame(function () {
+      leaves.forEach(function (l) { l.classList.remove('noanim'); });
+    });
+    f = target; applyZ(); Snd.flip(); syncUI();
+  } else {
+    if (target > f) flipForward(); else flipBackward();
+  }
+}
+
+/* ---------------- UI refs & sync ---------------- */
+var scrub = $('#scrubber'), pageLabel = $('#pageLabel'), btnPrev = $('#btnPrev'), btnNext = $('#btnNext'),
+    btnMark = $('#btnMark'), bmCount = $('#bmCount'), drawer = $('#tocDrawer'), searchBox = $('#searchBox'),
+    searchRes = $('#searchResults');
+var bms = new Set();
+try { JSON.parse(localStorage.getItem('jb_bm') || '[]').forEach(function (x) { bms.add(x); }); } catch (e) {}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function syncUI() {
+  scrub.max = N; scrub.value = f;
+  scrub.style.setProperty('--fill', (f / N * 100) + '%');
+  pageLabel.textContent = f === 0 ? 'Cover' : (f === N ? 'Back cover' : 'Pages ' + (2 * f - 1) + '–' + (2 * f));
+  btnPrev.disabled = (f === 0); btnNext.disabled = (f === N);
+  var p = f - 1, on = p >= 0 && p < BOOK.spreads.length && bms.has(p);
+  btnMark.classList.toggle('on', on);
+  btnMark.textContent = on ? '★ Marked' : '☆ Mark';
+  localStorage.setItem('jb_pos', String(f));
+}
+
+/* ---------------- bookmarks ---------------- */
+function saveBms() {
+  localStorage.setItem('jb_bm', JSON.stringify(Array.from(bms).sort(function (a, b) { return a - b; })));
+  renderBmList();
+}
+function renderBmList() {
+  var box = $('#bmList');
+  if (!bms.size) { box.innerHTML = '<em>No bookmarks yet — press ☆ Mark while reading.</em>'; }
+  else {
+    box.innerHTML = '';
+    Array.from(bms).sort(function (a, b) { return a - b; }).forEach(function (p) {
+      var c = document.createElement('span');
+      c.className = 'bm-chip'; c.dataset.go = p;
+      c.textContent = 'p.' + (2 * p + 1) + '–' + (2 * p + 2);
+      box.appendChild(c);
+    });
+  }
+  bmCount.textContent = bms.size ? bms.size : '';
+}
+btnMark.addEventListener('click', function () {
+  var p = f - 1;
+  if (p < 0 || p >= BOOK.spreads.length) { toast('Open a page-spread first to bookmark it.'); return; }
+  if (bms.has(p)) { bms.delete(p); toast('Bookmark removed.'); }
+  else { bms.add(p); Snd.tick(); toast('🔖 Spread marked! Find it in ☰ Contents.'); }
+  saveBms(); syncUI();
+});
+
+/* ---------------- contents drawer ---------------- */
+(function buildDrawerToc() {
+  var html = '';
+  BOOK.order.forEach(function (pid) {
+    var P = BOOK.parts[pid];
+    var chs = BOOK.chapters.filter(function (c) { return c.partId === pid; });
+    if (!chs.length) return;
+    html += '<div class="toc-part" style="--pc:' + P.color + '"><i></i>' + P.label + '</div>';
+    chs.forEach(function (c) {
+      html += '<div class="dr-row" data-go="' + c.idx + '"><span class="n">' + pad2(c.num) +
+        '</span><span class="t">' + c.title + '</span><span class="p">' + (2 * c.idx + 1) + '</span></div>';
+    });
+  });
+  $('#tocList').innerHTML = html;
+})();
+function toggleDrawer(forceBm) {
+  var open = forceBm ? true : !drawer.classList.contains('open');
+  drawer.classList.toggle('open', open);
+  if (open && forceBm) $('.dr-bm').scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+$('#btnToc').addEventListener('click', function () { toggleDrawer(); });
+$('#btnBm').addEventListener('click', function () { toggleDrawer(true); });
+$('#drClose').addEventListener('click', function () { drawer.classList.remove('open'); });
+
+/* ---------------- global clicks ---------------- */
+document.addEventListener('click', function (e) {
+  var g = e.target.closest('[data-go]');
+  if (g) { goTo(parseInt(g.dataset.go, 10) + 1, true); drawer.classList.remove('open'); closeSearch(); }
+  if (!e.target.closest('.tb-search')) closeSearch();
+});
+bookEl.addEventListener('click', function (e) {
+  if (e.target.closest('[data-go]')) return;
+  if (f === 0 && e.target.closest('.face.front .cover')) flipForward();
+  else if (f === N && e.target.closest('.face.back .backcov')) goTo(N - 1, true);
+});
+$('#hsPrev').addEventListener('click', flipBackward);
+$('#hsNext').addEventListener('click', flipForward);
+btnPrev.addEventListener('click', flipBackward);
+btnNext.addEventListener('click', flipForward);
+scrub.addEventListener('input', function () { goTo(parseInt(scrub.value, 10), true); });
+
+/* ---------------- sound / theme / fullscreen ---------------- */
+function soundIcon() { $('#btnSound').textContent = Snd.isMuted() ? '🔇' : '🔊'; }
+$('#btnSound').addEventListener('click', function () { Snd.toggle(); soundIcon(); toast(Snd.isMuted() ? '🔇 Sounds off' : '🔊 Sounds on'); });
+
+function applyTheme() {
+  var n = localStorage.getItem('jb_night') === '1';
+  document.body.classList.toggle('night', n);
+  $('#btnTheme').textContent = n ? '☀️' : '🌙';
+}
+$('#btnTheme').addEventListener('click', function () {
+  localStorage.setItem('jb_night', document.body.classList.contains('night') ? '0' : '1');
+  applyTheme();
+});
+$('#btnFs').addEventListener('click', function () {
+  if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+  else document.documentElement.requestFullscreen().catch(function () {});
+  setTimeout(fit, 350);
+});
+
+/* ---------------- toasts ---------------- */
+function toast(msg, action, cb) {
+  var t = document.createElement('div'); t.className = 'toast';
+  var s = document.createElement('span'); s.innerHTML = msg; t.appendChild(s);
+  if (action) {
+    var b = document.createElement('button'); b.textContent = action;
+    b.addEventListener('click', function () { cb && cb(); kill(); });
+    t.appendChild(b);
+  }
+  $('#toastZone').appendChild(t);
+  function kill() { t.classList.add('out'); setTimeout(function () { t.remove(); }, 330); }
+  setTimeout(kill, action ? 8000 : 3600);
+}
+
+/* ---------------- full-text search ---------------- */
+var sIndex = null;
+function buildIndex() {
+  sIndex = pages.map(function (p, i) {
+    var d = document.createElement('div');
+    d.innerHTML = p.raw ? p.html : ((p.kicker ? p.kicker + ' ' : '') + (p.head ? p.head + ' ' : '') + p.html);
+    return { flips: Math.ceil(i / 2), num: p.num || null, txt: d.textContent.replace(/\s+/g, ' ').toLowerCase() };
+  });
+}
+function closeSearch() { searchRes.hidden = true; searchRes.innerHTML = ''; }
+function doSearch(qRaw) {
+  var q = qRaw.trim().toLowerCase();
+  if (q.length < 2) { closeSearch(); return; }
+  if (!sIndex) buildIndex();
+  var out = '', hits = 0;
+  for (var i = 0; i < sIndex.length && hits < 22; i++) {
+    var pos = sIndex[i].txt.indexOf(q);
+    if (pos === -1) continue;
+    hits++;
+    var snip = sIndex[i].txt.slice(Math.max(0, pos - 42), pos + 78).replace(/</g, '&lt;');
+    var lab = sIndex[i].num != null ? 'p.' + sIndex[i].num : (i === 0 ? 'Cover' : 'Back');
+    out += '<button class="sr-item" data-flips="' + sIndex[i].flips + '"><b>' + lab +
+      '</b> …' + snip + '…</button>';
+  }
+  searchRes.innerHTML = out || '<div class="sr-empty">No matches in the book 🤷‍♂️</div>';
+  searchRes.hidden = false;
+}
+searchBox.addEventListener('input', function () {
+  clearTimeout(searchBox._t);
+  searchBox._t = setTimeout(function () { doSearch(searchBox.value); }, 160);
+});
+searchBox.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') {
+    var first = searchRes.querySelector('[data-flips]');
+    if (first) { goTo(parseInt(first.dataset.flips, 10), true); closeSearch(); searchBox.blur(); }
+  } else if (e.key === 'Escape') { closeSearch(); searchBox.blur(); }
+});
+searchRes.addEventListener('click', function (e) {
+  var b = e.target.closest('[data-flips]');
+  if (b) { goTo(parseInt(b.dataset.flips, 10), true); closeSearch(); }
+});
+
+/* ---------------- keyboard ---------------- */
+document.addEventListener('keydown', function (e) {
+  var tag = (e.target.tagName || '').toUpperCase();
+  var typing = tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable;
+  if (e.key === 'Escape') { closeSearch(); drawer.classList.remove('open'); if (typing) e.target.blur(); return; }
+  if (typing) return;
+  switch (e.key) {
+    case 'ArrowRight': case 'PageDown': case ' ': e.preventDefault(); flipForward(); break;
+    case 'ArrowLeft': case 'PageUp': e.preventDefault(); flipBackward(); break;
+    case 'Home': e.preventDefault(); goTo(0, true); break;
+    case 'End': e.preventDefault(); goTo(N, true); break;
+    case '/': e.preventDefault(); searchBox.focus(); searchBox.select(); break;
+    case 't': case 'T': toggleDrawer(); break;
+    case 'b': case 'B': toggleDrawer(true); break;
+    case 'm': case 'M': $('#btnSound').click(); break;
+    case 'n': case 'N': $('#btnTheme').click(); break;
+    case 'f': case 'F': $('#btnFs').click(); break;
+  }
+});
+
+/* ---------------- responsive fit ---------------- */
+function fit() {
+  var r = wrapEl.getBoundingClientRect();
+  var s = Math.min(r.width / 1210, r.height / 800, 1.06);
+  bookEl.style.setProperty('--s', Math.max(0.28, s).toFixed(3));
+}
+window.addEventListener('resize', fit);
+
+/* ---------------- init ---------------- */
+applyTheme(); soundIcon(); syncUI(); renderBmList(); fit();
+
+var savedPos = parseInt(localStorage.getItem('jb_pos') || '0', 10) || 0;
+if (savedPos >= 1 && savedPos <= N) {
+  toast('Welcome back, reader! You stopped at <strong>' +
+    (savedPos === N ? 'the end' : 'pages ' + (2 * savedPos - 1) + '–' + (2 * savedPos)) + '</strong>.',
+    'Continue →', function () { goTo(savedPos, false); });
+}
+setTimeout(function () { $('#loader').classList.add('hide'); }, 420);
+
+window.__book = { goToSpread: function (p) { goTo(p + 1, true); }, state: function () { return { flipped: f, sheets: N, spreads: BOOK.spreads.length, chapters: BOOK.chapters.length }; } };
+})();
+
+
+

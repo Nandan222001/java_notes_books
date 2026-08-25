@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Java · Zero → FAANG — The Interview Book</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Fira+Code:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/page.css">
+</head>
+<body>
+
+<div id="loader"><div class="cup">☕</div><p>Binding your book…</p></div>
+
+<header id="toolbar">
+  <div class="tb-brand"><span class="logo">☕</span> <b>Java</b><i>·Zero→FAANG</i></div>
+  <div class="tb-search">
+    <input id="searchBox" type="text" placeholder="Search the book…  ( / )" autocomplete="off">
+    <div id="searchResults" hidden></div>
+  </div>
+  <div class="tb-actions">
+    <button id="btnToc" title="Contents (T)">☰ <span class="lbl">Contents</span></button>
+    <button id="btnBm" title="Bookmarks (B)">🔖<span id="bmCount" class="cnt"></span></button>
+    <button id="btnSound" title="Sound on/off (M)">🔊</button>
+    <button id="btnTheme" title="Night reading (N)">🌙</button>
+    <button id="btnFs" title="Fullscreen (F)">⛶</button>
+  </div>
+</header>
+
+<main id="stage">
+  <div id="bookWrap">
+    <div id="book"></div>
+    <div class="spine-overlay"></div>
+    <button id="hsPrev" class="hotspot hs-left" aria-label="Previous page">‹</button>
+    <button id="hsNext" class="hotspot hs-right" aria-label="Next page">›</button>
+  </div>
+</main>
+
+<footer id="bottombar">
+  <button id="btnMark" title="Bookmark this spread">☆ Mark</button>
+  <button id="btnPrev" class="navbtn">‹ Prev</button>
+  <div id="progressWrap">
+    <input type="range" id="scrubber" min="0" max="1" step="1" value="0" aria-label="Jump to any spread">
+    <span id="pageLabel">Cover</span>
+  </div>
+  <button id="btnNext" class="navbtn">Next ›</button>
+</footer>
+
+<aside id="tocDrawer" aria-label="Table of contents">
+  <div class="dr-head"><h3>📖 Contents</h3><button id="drClose" aria-label="Close contents">✕</button></div>
+  <div id="tocList"></div>
+  <div class="dr-bm"><h4>🔖 Bookmarked spreads</h4><div id="bmList"><em>No bookmarks yet — press ☆ Mark while reading.</em></div></div>
+</aside>
+
+<div id="toastZone" aria-live="polite"></div>
+
+<script src="js/content/registry.js"></script>
+<script src="js/content/c00-front.js"></script>
+<script src="js/content/c01-foundations.js"></script>
+<script src="js/content/c02-oop.js"></script>
+<script src="js/content/c03-collections.js"></script>
+<script src="js/content/c04-java8-concurrency.js"></script>
+<script src="js/content/c05-jvm-io.js"></script>
+<script src="js/content/c06-solid-patterns-lld.js"></script>
+<script src="js/content/c07-spring-rest-jpa.js"></script>
+<script src="js/content/c08-microservices.js"></script>
+<script src="js/content/c09-data-hld.js"></script>
+<script src="js/content/c10-devops-cloud.js"></script>
+<script src="js/content/c11-playbook.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/highlight.js"></script>
+<script src="js/book.js"></script>
+</body>
+</html>
