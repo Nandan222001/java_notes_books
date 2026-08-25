@@ -299,8 +299,13 @@ $('#btnTheme').addEventListener('click', function () {
   applyTheme();
 });
 $('#btnFs').addEventListener('click', function () {
-  if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
-  else document.documentElement.requestFullscreen().catch(function () {});
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(function () {});
+  } else if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(function () {});
+  } else {
+    toast('Fullscreen isn’t supported on this browser.');
+  }
   setTimeout(fit, 350);
 });
 
