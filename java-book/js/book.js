@@ -84,14 +84,60 @@ function faceHTML(p, side) {
   return '<div class="page">' + head + '<div class="pg-body">' + p.html + '</div>' + foot + '</div><i class="fold"></i>';
 }
 
+/* Lazy hydration: with hundreds of sheets, building + syntax-highlighting every
+   page upfront is what makes load slow and flips janky. We create lightweight
+   leaf/face shells for all sheets (needed for correct z-index stacking) but only
+   fill in real HTML + highlighting for sheets near where the reader actually is. */
+var hydrated = [];
+function hydrateLeaf(i) {
+  if (i < 0 || i >= N || hydrated[i]) return;
+  hydrated[i] = true;
+  var leaf = leaves[i], fr = leaf.firstChild, bk = leaf.lastChild;
+  fr.innerHTML = faceHTML(pages[2 * i], 'front');
+  bk.innerHTML = faceHTML(pages[2 * i + 1], 'back');
+  HL.decorate(fr); HL.decorate(bk);
+}
+var HYDRATE_RADIUS = 4;
+function ensureHydrated(center, radius) {
+  var r = radius == null ? HYDRATE_RADIUS : radius;
+  for (var k = center - r; k <= center + r; k++) hydrateLeaf(k);
+}
+function idleHydrateRest() {
+  var i = 0;
+  function schedule(cb) {
+    if (window.requestIdleCallback) requestIdleCallback(cb, { timeout: 1200 });
+    else setTimeout(function () { cb({ timeRemaining: function () { return 8; } }); }, 200);
+  }
+  function step(deadline) {
+    while (i < N && (!deadline || deadline.timeRemaining() > 4)) { hydrateLeaf(i); i++; }
+    if (i < N) schedule(step);
+  }
+  schedule(step);
+}
+
+/* At any moment only the top 2 sheets of the stack (leaf f-1's back, leaf f's
+   front) are ever actually visible — everything else is fully buried under
+   nearer sheets. But every .leaf still carries backface-visibility/preserve-3d,
+   which forces the browser to promote each one to its own GPU compositing
+   layer — with hundreds of sheets that overwhelms the compositor and pages
+   silently fail to paint. Sheets far from the current position are display:none
+   (fully out of the render tree, zero compositing cost) so only a small window
+   around the reader's position is ever actually rendered. */
+var VISIBLE_RADIUS = 6;
+var visWindowCenter = null;
+function updateLeafVisibility(center) {
+  if (visWindowCenter === center) return;
+  visWindowCenter = center;
+  for (var i = 0; i < N; i++) {
+    leaves[i].style.display = Math.abs(i - center) <= VISIBLE_RADIUS ? '' : 'none';
+  }
+}
+
 for (var j = 0; j < N; j++) {
   var leaf = document.createElement('div');
   leaf.className = 'leaf'; leaf.dataset.i = j;
   var fr = document.createElement('div'); fr.className = 'face front';
-  fr.innerHTML = faceHTML(pages[2 * j], 'front');
   var bk = document.createElement('div'); bk.className = 'face back';
-  bk.innerHTML = faceHTML(pages[2 * j + 1], 'back');
-  HL.decorate(fr); HL.decorate(bk);
   leaf.appendChild(fr); leaf.appendChild(bk);
   leaf.addEventListener('transitionend', function (e) {
     if (e.propertyName === 'transform') applyZ();
@@ -99,6 +145,9 @@ for (var j = 0; j < N; j++) {
   bookEl.appendChild(leaf);
   leaves.push(leaf);
 }
+updateLeafVisibility(0);
+ensureHydrated(0, 8);
+idleHydrateRest();
 
 /* ---------------- flip state machine ---------------- */
 var f = 0;   /* number of flipped sheets */
@@ -111,6 +160,7 @@ applyZ();
 
 function flipForward() {
   if (f >= N) { Snd.thump(); return; }
+  ensureHydrated(f, HYDRATE_RADIUS);
   var l = leaves[f];
   l.classList.remove('noanim');
   l.style.zIndex = String(2 * N + 40);
@@ -118,21 +168,25 @@ function flipForward() {
   f++;
   Snd.flip();
   if (f === N) setTimeout(function () { Snd.thump(); }, 700);
+  setTimeout(applyZ, 720);   /* safety net in case transitionend is missed under load */
   syncUI();
 }
 function flipBackward() {
   if (f <= 0) { Snd.thump(); return; }
   f--;
+  ensureHydrated(f, HYDRATE_RADIUS);
   var l = leaves[f];
   l.classList.remove('noanim');
   l.style.zIndex = String(2 * N + 40);
   l.classList.remove('flipped');
   Snd.flip();
+  setTimeout(applyZ, 720);
   syncUI();
 }
 function goTo(target, instant) {
   target = Math.max(0, Math.min(N, target));
   if (target === f) return;
+  ensureHydrated(target, HYDRATE_RADIUS);
   if (instant || Math.abs(target - f) > 1) {
     leaves.forEach(function (l, i) {
       l.classList.add('noanim');
@@ -203,9 +257,12 @@ try { JSON.parse(localStorage.getItem('jb_bm') || '[]').forEach(function (x) { b
 function pad2(n) { return String(n).padStart(2, '0'); }
 
 function syncUI() {
+  updateLeafVisibility(f);
   scrub.max = N; scrub.value = f;
   scrub.style.setProperty('--fill', (f / N * 100) + '%');
-  pageLabel.textContent = f === 0 ? 'Cover' : (f === N ? 'Back cover' : 'Pages ' + (2 * f - 1) + '–' + (2 * f));
+  pageLabel.textContent = f === 0 ? 'Cover' : (f === N ? 'Back cover'
+    : (isMobile ? 'p. ' + (mFront ? 2 * f : 2 * f - 1)
+                : 'Pages ' + (2 * f - 1) + '–' + (2 * f)));
   btnPrev.disabled = (f === 0); btnNext.disabled = (f === N);
   var p = f - 1, on = p >= 0 && p < BOOK.spreads.length && bms.has(p);
   btnMark.classList.toggle('on', on);
@@ -406,6 +463,11 @@ function fit() {
   applyPan(true);
 }
 window.addEventListener('resize', fit);
+/* rotating a phone fires orientationchange; some browsers skip the resize event
+   until the URL bar settles, so re-fit twice */
+window.addEventListener('orientationchange', function () {
+  setTimeout(fit, 60); setTimeout(fit, 400);
+});
 
 /* ---------------- init ---------------- */
 applyTheme(); soundIcon(); syncUI(); renderBmList(); fit();
