@@ -24,6 +24,7 @@ const fs = require('fs');
  'c12-dsa-33-greedy-scheduling.js',
  'c12-dsa-34-backtracking-2.js',
  'c12-dsa-35-graphs-grid.js',
+ 'c12-dsa-36-heaps-scheduling.js',
  'c11-playbook.js']
 .forEach(f => eval(fs.readFileSync('js/content/' + f, 'utf8')));
 
