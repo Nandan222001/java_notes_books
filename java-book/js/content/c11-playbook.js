@@ -1,12 +1,12 @@
-/* ===== CHAPTERS 56–57 · Interview Playbook & Finale ===== */
+/* ===== CHAPTERS 72–73 · Interview Playbook & Finale ===== */
 (function () {
 var B = window.BOOK;
-B.chapter('pf', 56, 'The Interview Playbook');
+B.chapter('pf', 72, 'The Interview Playbook');
 
 /* spread 1 */
 B.spread(
-{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 56 · Strategy',
-html: `<h2 class="chap"><span class="chnum">CHAPTER 56</span>The Playbook — Turning Knowledge Into Offers 🎯</h2>
+{ kicker: 'FINALE · INTERVIEW PLAYBOOK', head: 'Ch 72 · Strategy',
+html: `<h2 class="chap"><span class="chnum">CHAPTER 72</span>The Playbook — Turning Knowledge Into Offers 🎯</h2>
 <h3 class="sec">Resume bullets that survive 6-second scans</h3>
 <p><b>X-Y-Z:</b> “Built <em>X</em> using <em>Y</em> improving <em>Z by N%</em>.” Numbers beat adjectives; projects beat course lists; GitHub link must show clean commits.</p>
 <h3 class="sec">DSA rounds — Java-specific edge</h3>
@@ -68,11 +68,11 @@ html: `<div class="grid g2">
 <div class="qa"><div class="q">Interviewer keeps pushing deeper?</div><div class="a">That's a GOOD sign — they're probing ceiling. Stay curious, think out loud, concede unknown edges honestly.</div></div>
 </div>
 <div class="callout hook"><span class="ct">🎯 Memory hook</span>“Companies hire SIGNALS: clarity, honesty, momentum. Broadcast all three 🔊.”</div>`});
-/* ===== CHAPTER 57 · The Finish Line ===== */
-B.chapter('pf', 57, 'The Finish Line');
+/* ===== CHAPTER 73 · The Finish Line ===== */
+B.chapter('pf', 73, 'The Finish Line');
 B.spread(
 { kicker: 'EPILOGUE', head: 'You Made It',
-html: `<h2 class="chap"><span class="chnum">CHAPTER 57 · THE END</span>A Letter To The Reader Who Finished</h2>
+html: `<h2 class="chap"><span class="chnum">CHAPTER 73 · THE END</span>A Letter To The Reader Who Finished</h2>
 <p class="dropcap">If you've turned this final page, you hold more interview-ready Java knowledge than most engineers refresh yearly. From a humble <code>public static void main</code> to circuit breakers singing across microservices — the map is yours. What separates offers from wishes is only <strong>repetition and reps</strong>.</p>
 <h3 class="sec">Build these three portfolio projects 🛠️</h3>
 <ul>

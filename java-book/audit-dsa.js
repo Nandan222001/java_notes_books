@@ -11,7 +11,7 @@ const base = ['registry.js','c00-front.js','c01-foundations.js','c02-oop.js','c0
 
 const idxHtml = fs.readFileSync('index.html', 'utf8');
 const dsaFiles = [...idxHtml.matchAll(/js\/content\/(c12-dsa-[\w-]+\.js)/g)].map(m => m[1]);
-if (dsaFiles.length !== 24) throw new Error('expected 24 dsa files, found ' + dsaFiles.length);
+if (dsaFiles.length < 24) throw new Error('expected at least 24 dsa files, found ' + dsaFiles.length);
 
 [...base, ...dsaFiles, 'c11-playbook.js']
   .forEach(f => eval(fs.readFileSync('js/content/' + f, 'utf8')));
@@ -19,7 +19,7 @@ if (dsaFiles.length !== 24) throw new Error('expected 24 dsa files, found ' + ds
 const B = window.BOOK;
 
 /* map every spread index -> owning chapter (chapter.idx = first spread of that chapter) */
-const chStarts = B.chapters.map((c, i) => ({ num: c.num, title: c.title, idx: c.idx, end: i + 1 < B.chapters.length ? B.chapters[i + 1].idx : B.spreads.length }));
+const chStarts = B.chapters.map((c, i) => ({ num: c.num, partId: c.partId, title: c.title, idx: c.idx, end: i + 1 < B.chapters.length ? B.chapters[i + 1].idx : B.spreads.length }));
 function ownerOf(spreadIdx) {
   for (const ch of chStarts) if (spreadIdx >= ch.idx && spreadIdx < ch.end) return ch;
   return null;
@@ -32,7 +32,7 @@ let problems = [], issues = [], prevNum = 0, dupes = 0;
 
 B.spreads.forEach((s, i) => {
   const ch = ownerOf(i);
-  if (!ch || ch.num < 32 || ch.num > 55) return;          // only DSA chapters 32–55
+  if (!ch || ch.partId !== 'pd') return;                    // every DSA problem-bank chapter
   const L = s.left, R = s.right;
   const p = { spread: i, chapter: ch.num, chTitle: ch.title };
 
@@ -54,6 +54,8 @@ B.spreads.forEach((s, i) => {
     complexity: /⏱️ Complexity/.test(R.html),
     insight:    /🎯 Key Insight/.test(R.html)
   };
+  // plain-language requirement: every problem must carry a non-technical analogy block
+  p.plainWords = /🧒 In Plain Words/.test(R.html);
   p.checks = checks;
   p.fail = Object.entries(checks).filter(([, ok]) => !ok).map(([k]) => k);
 
@@ -94,7 +96,9 @@ console.log(JSON.stringify({
   duplicates: dupes,
   fullyComplete: problems.filter(p => !p.fail.length).length,
   withIssues: problems.filter(p => p.fail.length).length,
-  zeroJargonFlag: problems.filter(p => p.jargonRatio === 0).length
+  zeroJargonFlag: problems.filter(p => p.jargonRatio === 0).length,
+  plainWordsPresent: problems.filter(p => p.plainWords).length,
+  plainWordsMissing: problems.filter(p => !p.plainWords).length
 }, null, 1));
 
 console.log('\n=== PER CHAPTER ===');
