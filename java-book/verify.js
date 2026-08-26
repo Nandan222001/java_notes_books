@@ -28,6 +28,7 @@ const fs = require('fs');
  'c12-dsa-37-bitmask-dp.js',
  'c12-dsa-38-math-geometry.js',
  'c12-dsa-39-design-2.js',
+ 'c12-dsa-40-wildcards.js',
  'c11-playbook.js']
 .forEach(f => eval(fs.readFileSync('js/content/' + f, 'utf8')));
 
