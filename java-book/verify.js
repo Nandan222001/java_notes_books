@@ -14,6 +14,7 @@ const fs = require('fs');
  'c12-dsa-20-matrix.js','c12-dsa-21-design.js','c12-dsa-22-sorting-searching.js',
  'c12-dsa-23-advanced-structures.js','c12-dsa-24-divide-conquer.js',
  'c12-dsa-25-string-classic.js',
+ 'c12-dsa-26-prefix-sum.js',
  'c11-playbook.js']
 .forEach(f => eval(fs.readFileSync('js/content/' + f, 'utf8')));
 
