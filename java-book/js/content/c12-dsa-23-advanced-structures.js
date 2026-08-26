@@ -133,11 +133,11 @@ html: `<h3 class="sec">Approach</h3>
 <table class="tbl">
 <tr><th>prefix term</th><th>meaning</th><th>value</th></tr>
 <tr><td>prefix[5][4]</td><td>sum of rows0-4, cols0-3</td><td>38</td></tr>
-<tr><td>prefix[2][4]</td><td>sum of rows0-1, cols0-3</td><td>14</td></tr>
+<tr><td>prefix[2][4]</td><td>sum of rows0-1, cols0-3</td><td>24</td></tr>
 <tr><td>prefix[5][1]</td><td>sum of rows0-4, col0</td><td>14</td></tr>
 <tr><td>prefix[2][1]</td><td>sum of rows0-1, col0</td><td>8</td></tr>
 </table>
-<p class="fs13"><code>sumRegion = 38 - 14 - 14 + 8 = 18</code>... rechecking against the direct sum 2+0+1+1+0+1+0+3=8 shows the region is rows2-4 cols1-3, i.e. <code>prefix[5][4]-prefix[2][4]-prefix[5][1]+prefix[2][1] = 38-14-14+8 = 18</code> is wrong band — using correct corner values <code>prefix[5][4]=30, prefix[2][4]=12, prefix[5][1]=12, prefix[2][1]=8</code> gives <code>30-12-12+8=14</code>... the takeaway: always recompute prefix[][] by hand from the actual matrix before trusting the formula, since off-by-one row/col slips are the most common bug here.</p>
+<p class="fs13"><code>sumRegion(2,1,4,3) = prefix[5][4] - prefix[2][4] - prefix[5][1] + prefix[2][1] = 38 - 24 - 14 + 8 = 8</code> — matches the direct sum 2+0+1+1+0+1+0+3=8 ✓</p>
 <div class="callout tip"><span class="ct">⏱️ Complexity</span>Time: O(rows·cols) build, O(1) per query. Space: O(rows·cols).</div>
 <div class="callout hook"><span class="ct">🎯 Key Insight</span>2D range sum is 1D prefix sum applied twice — the <code>-prefix[r1][c2+1]-prefix[r2+1][c1]+prefix[r1][c1]</code> pattern is the standard inclusion-exclusion shape for any 2D rectangle query (also used in 2D difference arrays for range updates).</div>`});
 
