@@ -29,6 +29,8 @@ const stripTags = h => h.replace(/<[^>]+>/g, ' ');
 const JARGON = /\b(hash ?map|hash ?set|pointer|recursion|recursive|memoiz|big.?o|O\([^)]*\)|array|stack|queue|heap|trie|graph|node|bit|xor|dp\b|dynamic programming|binary search|sliding window|backtrack|union.?find|BFS|DFS|complexity|amortized)\b/gi;
 
 let problems = [], issues = [], prevNum = 0, dupes = 0;
+const titleSeen = new Set();
+let titleDupes = 0;
 
 B.spreads.forEach((s, i) => {
   const ch = ownerOf(i);
@@ -41,6 +43,9 @@ B.spreads.forEach((s, i) => {
   p.diff = m ? m[1] && m[2].toUpperCase() : '?';
   const t = L.html.match(/<\/span>([^<]+)<\/h2>/);
   p.title = t ? t[1].trim() : '?';
+  const tKey = p.title.toLowerCase();
+  if (titleSeen.has(tKey)) { p.titleDup = true; titleDupes++; }
+  else titleSeen.add(tKey);
 
   const checks = {
     qStatement: /<p class="dropcap">/.test(L.html),
@@ -76,7 +81,7 @@ B.spreads.forEach((s, i) => {
     prevNum = p.num;
   }
   problems.push(p);
-  if (p.fail.length || p.dup) issues.push(p);
+  if (p.fail.length || p.dup || p.titleDup) issues.push(p);
 });
 
 /* ---- report ---- */
@@ -94,6 +99,7 @@ console.log(JSON.stringify({
   shortfall: 400 - problems.length,
   numberingLast: prevNum,
   duplicates: dupes,
+  titleDuplicates: titleDupes,
   fullyComplete: problems.filter(p => !p.fail.length).length,
   withIssues: problems.filter(p => p.fail.length).length,
   zeroJargonFlag: problems.filter(p => p.jargonRatio === 0).length,
@@ -109,7 +115,7 @@ Object.keys(byChapter).sort((a, b) => a - b).forEach(k => {
 
 console.log('\n=== PROBLEM ISSUES (per-question) ===');
 if (!issues.length) console.log('none — every problem passes all structural checks ✓');
-issues.forEach(p => console.log(`Q${String(p.num).padStart(3)} ch${p.chapter} [${p.title}] → ${p.fail.join(', ')}`));
+issues.forEach(p => console.log(`Q${String(p.num).padStart(3)} ch${p.chapter} [${p.title}]${p.titleDup ? ' ← DUPLICATE TITLE' : ''} → ${p.fail.join(', ')}`));
 
 console.log('\n=== PLAIN-LANGUAGE SAMPLE (jargon density, lower = simpler) ===');
 const sample = problems.filter((_, i) => i % 20 === 0);

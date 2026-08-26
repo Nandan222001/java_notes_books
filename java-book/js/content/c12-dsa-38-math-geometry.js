@@ -239,95 +239,85 @@ private long dist2(int[] a, int[] b) {
 
 /* Problem 377 */
 B.spread(
-{ kicker: 'DSA · MATH & GEOMETRY II', head: 'Q377 · Hard',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 377 · HARD</span>Max Points on a Line</h2>
-<div class="pillrow"><span class="pill" style="--pc:#d62828">HARD</span><span class="pill">Slope Hashing</span><span class="pill">gcd Normalisation</span></div>
-<p class="dropcap">Given n points on a plane, return the maximum number of them lying on ONE straight line.</p>
+{ kicker: 'DSA · MATH & GEOMETRY II', head: 'Q377 · Medium',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 377 · MEDIUM</span>Permutation Sequence</h2>
+<div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Factorial Number System</span><span class="pill">Block Skipping</span></div>
+<p class="dropcap">The set <code>[1..n]</code> contains exactly n! permutations in sorted order. Return the <code>k</code>-th (1-indexed) WITHOUT generating any others.</p>
 <h3 class="sec">Example</h3>
-<pre class="code" data-lang="text"><code>[[1,1],[2,2],[3,3]] → 3
-[[1,1],[3,2],[5,3],[4,1],[2,3],[1,4]] → 4</code></pre>
+<pre class="code" data-lang="text"><code>n=3, k=3 → "213"   (123, 132, | 213 ←, …)
+n=4, k=9 → "2314"</code></pre>
 <h3 class="sec">Constraints</h3>
-<ul><li>1 ≤ n ≤ 300 · coordinates within ±10⁴</li></ul>
-<div class="callout note"><span class="ct">📝 Hint</span>Anchor each point and hand every partner a NORMALISED slope: reduce dy/dx by their gcd, then pin the sign so (1,2) and (−1,−2) get one nickname.</div>`},
+<ul><li>1 ≤ n ≤ 9 · 1 ≤ k ≤ n!</li></ul>
+<div class="callout note"><span class="ct">📝 Hint</span>Fixing the leading digit owns exactly (n−1)! permutations. Divide (k−1) by (n−1)! to see WHICH digit leads, remove it from the pool, repeat on the remainder.</div>`},
 { kicker: 'DRY RUN & TRACE', head: 'Walkthrough',
 html: `<h3 class="sec">Approach</h3>
-<pre class="code" data-lang="java"><code>public int maxPoints(int[][] pts) {
-    int n = pts.length, best = 1;
-    for (int i = 0; i &lt; n; i++) {
-        Map&lt;String, Integer&gt; slope = new HashMap&lt;&gt;();
-        int localBest = 0;
-        for (int j = i + 1; j &lt; n; j++) {
-            int dx = pts[j][0] - pts[i][0];
-            int dy = pts[j][1] - pts[i][1];
-            int g = gcd(dx, dy);
-            dx /= g; dy /= g;
-            if (dx &lt; 0 || (dx == 0 &amp;&amp; dy &lt; 0)) {
-                dx = -dx; dy = -dy;
-            }
-            String key = dy + "/" + dx;
-            localBest = Math.max(localBest,
-                slope.merge(key, 1, Integer::sum));
-        }
-        best = Math.max(best, localBest + 1);
+<pre class="code" data-lang="java"><code>public String getPermutation(int n, int k) {
+    List&lt;Integer&gt; digits = new ArrayList&lt;&gt;();
+    int[] fact = new int[n];
+    fact[0] = 1;
+    for (int i = 1; i &lt; n; i++) fact[i] = fact[i-1] * i;
+    for (int i = 1; i &lt;= n; i++) digits.add(i);
+    StringBuilder sb = new StringBuilder();
+    k--;                             // switch to 0-based
+    for (int pos = n - 1; pos &gt;= 0; pos--) {
+        int idx = k / fact[pos];     // which block am I in?
+        sb.append(digits.remove(idx));
+        k %= fact[pos];              // distance inside block
     }
-    return best;
-}
-private int gcd(int a, int b) {
-    return b == 0 ? a : gcd(b, a % b);
+    return sb.toString();
 }</code></pre>
 <h3 class="sec">Dry Run</h3>
-<p class="fs13">Input: <code>[[1,1],[2,2],[3,3]]</code> — anchor (1,1)</p>
+<p class="fs13">Input: <code>n=3, k=3</code> → k becomes 2 · facts [1,1,2]</p>
 <table class="tbl">
-<tr><th>partner</th><th>(dx,dy)</th><th>÷gcd</th><th>key</th><th>count</th></tr>
-<tr><td>(2,2)</td><td>(1,1)</td><td>(1,1)</td><td>"1/1"</td><td>1</td></tr>
-<tr><td>(3,3)</td><td>(2,2)</td><td>(1,1)</td><td>"1/1"</td><td>2 ✓</td></tr>
+<tr><th>pos</th><th>fact[pos]</th><th>idx = k/fact</th><th>pick</th><th>k' = k%fact</th><th>sb</th></tr>
+<tr><td>2</td><td>2</td><td>2/2 = 1</td><td><b>2</b></td><td>0</td><td>"2"</td></tr>
+<tr><td>1</td><td>1</td><td>0/1 = 0</td><td><b>1</b></td><td>0</td><td>"21"</td></tr>
+<tr><td>0</td><td>1</td><td>0/1 = 0</td><td><b>3</b></td><td>0</td><td>"213" ✓</td></tr>
 </table>
-<p class="fs13">best = 2 + 1(anchor) = <b>3</b> ✓</p>
-<div class="callout tip"><span class="ct">⏱️ Complexity</span>Time: O(n² log C) — gcd per pair. Space: O(n) for the map.</div>
-<div class="callout note"><span class="ct">🧒 In Plain Words</span>Stand on each dot and give every other dot a direction nickname like "up-right 3 by 5" — always shrunk to smallest steps and always facing the same way, so opposite directions share one name. Everyone with the same nickname marches along a single invisible ruler. The most popular nickname marks the longest lineup; add yourself at its front.</div>
-<div class="callout hook"><span class="ct">🎯 Key Insight</span>A reduced signed FRACTION string replaces floating-point slopes — no rounding collisions, ever. Verticals become "1/0", horizontals "0/1", handled free.</div>`});
+<div class="callout tip"><span class="ct">⏱️ Complexity</span>O(n²) — the list removal dominates at n ≤ 9. Space: O(n).</div>
+<div class="callout note"><span class="ct">🧒 In Plain Words</span>A phone book of ALL possible names in alphabet order, and you must open the book straight at entry k. Each choice of first letter owns an equal shelf of entries — (n−1)! of them. So divide to find which SHELF k sits on (that fixes the first letter), then recurse inside that shelf with what's left of your page counter. You never flip through pages; you teleport between shelves.</div>
+<div class="callout hook"><span class="ct">🎯 Key Insight</span>This is just WRITING k−1 in factorial base: digits of k−1 in (n−1)!, (n−2)!… ARE the selection indices — combinatorics masquerading as arithmetic.</div>`});
+
 
 /* Problem 378 */
 B.spread(
-{ kicker: 'DSA · MATH & GEOMETRY II', head: 'Q378 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 378 · MEDIUM</span>Mirror Reflection</h2>
-<div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Parity Trick</span><span class="pill">lcm Unfolding</span></div>
-<p class="dropcap">A mirror room has receptors at corners: 0 = southeast <code>(p,0)</code>, 1 = northeast <code>(p,q)</code>, 2 = northwest <code>(0,q)</code>. A laser fires from southwest at 45° up-right. Which receptor catches it first?</p>
+{ kicker: 'DSA · MATH & GEOMETRY II', head: 'Q378 · Hard',
+html: `<h2 class="chap"><span class="chnum">PROBLEM 378 · HARD</span>Count Digit One</h2>
+<div class="pillrow"><span class="pill" style="--pc:#d62828">HARD</span><span class="pill">Column Audit</span><span class="pill">high·cur·low Split</span></div>
+<p class="dropcap">Count how many times the digit <b>1</b> appears across ALL integers from 1 to <code>n</code>.</p>
 <h3 class="sec">Example</h3>
-<pre class="code" data-lang="text"><code>p=2, q=1 → 0
-p=1, q=1 → 1
-p=1, q=2 → 2</code></pre>
+<pre class="code" data-lang="text"><code>n=13 → 6    // 1, 10, 11(twice), 12, 13
+n=0  → 0</code></pre>
 <h3 class="sec">Constraints</h3>
-<ul><li>1 ≤ p, q ≤ 1000 · ray never returns to start first</li></ul>
-<div class="callout note"><span class="ct">📝 Hint</span>Don't simulate bounces — UNFOLD them. The beam flies straight through mirrored clone rooms until it travels lcm(p,q); PARITY of wall-crossings names the real corner.</div>`},
+<ul><li>0 ≤ n ≤ 10⁹ — brute force listing is hopeless</li></ul>
+<div class="callout note"><span class="ct">📝 Hint</span>Audit each DECIMAL COLUMN separately. Split n around a column into high | cur | low; each column contributes on every full rotation plus partial credit when cur == 1.</div>`},
 { kicker: 'DRY RUN & TRACE', head: 'Walkthrough',
 html: `<h3 class="sec">Approach</h3>
-<pre class="code" data-lang="java"><code>public int mirrorReflection(int p, int q) {
-    long g = gcd(p, q);
-    long L = p / g * q;          // lcm(p, q)
-    long v = L / p;              // vertical crossings
-    long w = L / q;              // horizontal crossings
-    boolean east  = v % 2 == 1;
-    boolean north = w % 2 == 1;
-    if (east &amp;&amp; north) return 1; // corner (p, q)
-    if (east)          return 0; // corner (p, 0)
-    return 2;                    // corner (0, q)
-}
-private long gcd(long a, long b) {
-    return b == 0 ? a : gcd(b, a % b);
+<pre class="code" data-lang="java"><code>public int countDigitOne(int n) {
+    long place = 1;                 // 1, 10, 100 …
+    int count = 0;
+    while (place &lt;= n) {
+        long high = n / (place * 10);
+        long cur  = (n / place) % 10;
+        long low  = n % place;
+        if (cur == 0)      count += high * place;
+        else if (cur == 1) count += high * place + low + 1;
+        else               count += (high + 1) * place;
+        place *= 10;
+    }
+    return count;
 }</code></pre>
 <h3 class="sec">Dry Run</h3>
-<p class="fs13">Input: <code>p=2, q=1</code></p>
+<p class="fs13">Input: <code>n = 13</code></p>
 <table class="tbl">
-<tr><th>step</th><th>value</th><th>meaning</th></tr>
-<tr><td>L = lcm(2,1)</td><td>2</td><td>straight-flight length</td></tr>
-<tr><td>v = 2/2 = 1 (odd)</td><td>east</td><td>lands on right wall</td></tr>
-<tr><td>w = 2/1 = 2 (even)</td><td>south side</td><td>bounces back to bottom</td></tr>
-<tr><td colspan="2">(east, not north)</td><td>receptor <b>0</b> ✓</td></tr>
+<tr><th>place</th><th>high</th><th>cur</th><th>low</th><th>formula</th><th>added</th></tr>
+<tr><td>1s</td><td>1</td><td>3 (&gt;1)</td><td>0</td><td>(1+1)×1</td><td>2 → count 2</td></tr>
+<tr><td>10s</td><td>0</td><td>1 (==1)</td><td>3</td><td>0×10 + 3 + 1</td><td>4 → count 6 ✓</td></tr>
+<tr><td colspan="6">ones seen: units of {1,11} = 2 · tens of {10,11,12,13} = 4 → total 6</td></tr>
 </table>
-<div class="callout tip"><span class="ct">⏱️ Complexity</span>Time: O(log max(p,q)) for the gcd. Space: O(1).</div>
-<div class="callout note"><span class="ct">🧒 In Plain Words</span>Forget the ball bouncing between mirrors — pretend all four walls are GLASS. The beam flies straight through an endless hall of cloned rooms and stops at the first clone-corner it meets. Whether that clone sits an odd or even number of rooms east and north tells you which corner of YOUR room it really is. Counting rooms beats tracing angles.</div>
-<div class="callout hook"><span class="ct">🎯 Key Insight</span>Unfold reflections instead of simulating them: parity of crossings IS the answer. Building lcm as <code>p/g*q</code> keeps intermediate products small.</div>`});
+<div class="callout tip"><span class="ct">⏱️ Complexity</span>Time: O(log₁₀ n) — one pass over columns. Space: O(1).</div>
+<div class="callout note"><span class="ct">🧒 In Plain Words</span>Imagine an old car odometer and you collect how often the '1' numeral shows, wheel by wheel. For EACH wheel: wheels to the LEFT spin through full rotations regardless (count those wholesale); the current wheel either passed its '1' already this rotation, hasn't reached it, or is sitting ON it right now — in which case the wheels to the RIGHT contribute whatever's currently showing. No listing, just three numbers per wheel.</div>
+<div class="callout hook"><span class="ct">🎯 Key Insight</span>The high·cur·low split counts a pattern per COLUMN instead of per NUMBER — the standard trick for every "count digit X up to N" problem.</div>`});
 
 /* Problem 379 */
 B.spread(

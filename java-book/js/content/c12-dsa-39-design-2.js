@@ -109,72 +109,54 @@ html: `<h3 class="sec">Approach</h3>
 /* Problem 383 */
 B.spread(
 { kicker: 'DSA · DESIGN II', head: 'Q383 · Medium',
-html: `<h2 class="chap"><span class="chnum">PROBLEM 383 · MEDIUM</span>LRU Cache</h2>
-<div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Doubly Linked List</span><span class="pill">HashMap Spine</span></div>
-<p class="dropcap">Design a fixed-capacity cache: <code>get(key)</code> and <code>put(key, val)</code> must both run in O(1). When full, evict the LEAST RECENTLY USED entry — where get and put both count as "use".</p>
+html: `<h2 class="chap"><span class="chnum">PROBLEM 383 · MEDIUM</span>Flatten 2D Vector</h2>
+<div class="pillrow"><span class="pill" style="--pc:#e76f00">MEDIUM</span><span class="pill">Two Cursors</span><span class="pill">Lazy Row Skip</span></div>
+<p class="dropcap">Wrap a 2D vector (rows may be EMPTY) in an iterator exposing <code>next()</code> and <code>hasNext()</code>, walking values row-major without copying anything.</p>
 <h3 class="sec">Example</h3>
-<pre class="code" data-lang="text"><code>cap = 2
-put(1,1); put(2,2); get(1) → 1
-put(3,3)   // evicts 2 (untouched longest)
-get(2)  → -1
-put(4,4)   // evicts 1
-get(1) → -1; get(3) → 3; get(4) → 4</code></pre>
+<pre class="code" data-lang="text"><code>vec = [[1,2],[3],[],[4]]
+next() → 1 · next() → 2
+next() → 3          // skips empty row transparently
+next() → 4
+hasNext() → false</code></pre>
 <h3 class="sec">Constraints</h3>
-<ul><li>1 ≤ capacity ≤ 3000 · O(1) per operation required</li></ul>
-<div class="callout note"><span class="ct">📝 Hint</span>HashMap finds nodes instantly; a doubly linked list with SENTINEL head/tail re-orders them instantly. Front = freshest, back = eviction zone.</div>`},
+<ul><li>n rows × m cols ≤ 10⁵ · O(1) extra space · amortised O(1) per call</li></ul>
+<div class="callout note"><span class="ct">📝 Hint</span>Two cursors: row and column. Normalise BEFORE answering each call — advance until you sit on a real value or fall off the end.</div>`},
 { kicker: 'DRY RUN & TRACE', head: 'Walkthrough',
 html: `<h3 class="sec">Approach</h3>
-<pre class="code" data-lang="java"><code>class LRUCache {
-    class Node { int key, val; Node prev, next; }
-    private final int cap;
-    private final Map&lt;Integer, Node&gt; map = new HashMap&lt;&gt;();
-    private final Node head = new Node();   // sentinel
-    private final Node tail = new Node();
+<pre class="code" data-lang="java"><code>public class Vector2D {
+    private int[][] v;
+    private int row = 0, col = 0;
 
-    public LRUCache(int capacity) {
-        cap = capacity;
-        head.next = tail; tail.prev = head;
+    public Vector2D(int[][] vec) { v = vec; }
+
+    public int next() {
+        settle();                    // guarantee valid spot
+        return v[row][col++];
     }
-    public int get(int key) {
-        Node n = map.get(key);
-        if (n == null) return -1;
-        unlink(n); toFront(n);
-        return n.val;
+    public boolean hasNext() {
+        settle();
+        return row &lt; v.length;
     }
-    public void put(int key, int value) {
-        Node n = map.get(key);
-        if (n != null) {                    // refresh + move
-            n.val = value; unlink(n); toFront(n); return;
+    private void settle() {          // hop past empty rows
+        while (row &lt; v.length &amp;&amp; col == v[row].length) {
+            row++; col = 0;
         }
-        if (map.size() == cap) {            // evict tail.prev
-            Node lru = tail.prev;
-            unlink(lru); map.remove(lru.key);
-        }
-        n = new Node(); n.key = key; n.val = value;
-        map.put(key, n); toFront(n);
-    }
-    private void unlink(Node n) {
-        n.prev.next = n.next; n.next.prev = n.prev;
-    }
-    private void toFront(Node n) {
-        n.next = head.next; n.prev = head;
-        head.next.prev = n; head.next = n;
     }
 }</code></pre>
 <h3 class="sec">Dry Run</h3>
-<p class="fs13">Capacity 2 — MRU on the right</p>
+<p class="fs13">Input: <code>[[1,2], [3], [], [4]]</code></p>
 <table class="tbl">
-<tr><th>call</th><th>order (old → new)</th><th>result</th></tr>
-<tr><td>put(1,1)</td><td>[1]</td><td>—</td></tr>
-<tr><td>put(2,2)</td><td>[1, 2]</td><td>—</td></tr>
-<tr><td>get(1)</td><td>[2, 1] ← 1 promoted</td><td>1 ✓</td></tr>
-<tr><td>put(3,3) FULL</td><td>evict 2 → [1, 3]</td><td>—</td></tr>
-<tr><td>get(2)</td><td>[1, 3]</td><td>-1 ✓</td></tr>
-<tr><td>put(4,4) FULL</td><td>evict 1 → [3, 4]</td><td>—</td></tr>
+<tr><th>call</th><th>settle action</th><th>(row,col)</th><th>returns</th></tr>
+<tr><td>next()</td><td>—</td><td>(0,0)</td><td>1</td></tr>
+<tr><td>next()</td><td>—</td><td>(0,1)</td><td>2</td></tr>
+<tr><td>next()</td><td>col==2==len → row1</td><td>(1,0)</td><td>3</td></tr>
+<tr><td>hasNext()</td><td>row2 empty → row3</td><td>(3,0)</td><td>true ✓</td></tr>
+<tr><td>next()</td><td>—</td><td>(3,0)</td><td>4</td></tr>
+<tr><td>hasNext()</td><td>col==1==len → row4 = end</td><td>(4,0)</td><td>false ✓</td></tr>
 </table>
-<div class="callout tip"><span class="ct">⏱️ Complexity</span>get/put: O(1) time. Space: O(capacity).</div>
-<div class="callout note"><span class="ct">🧒 In Plain Words</span>A coat-check counter: whenever a ticket is touched, its coat jumps to the FRONT of the rail. When the rail is full and a new coat arrives, the attendant simply takes the coat hanging at the very BACK — nobody has asked for it the longest. The numbered ledger (hashmap) finds any coat instantly; the rail order (linked list) tracks freshness without any searching.</div>
-<div class="callout hook"><span class="ct">🎯 Key Insight</span>Sentinels kill every null-edge case: insert/remove code never branches on empty ends. HashMap answers WHERE, doubly-linked list answers HOW FRESH — each structure does the one thing arrays can't.</div>`});
+<div class="callout tip"><span class="ct">⏱️ Complexity</span>Amortised O(1) per call — each cell settled-over at most once ever. Space: O(1).</div>
+<div class="callout note"><span class="ct">🧒 In Plain Words</span>Reading a book whose chapters sometimes have BLANK pages. Two fingers mark your place: which chapter, which line. Whenever someone asks "is there more?", slide forward across any blank pages first — then answer honestly. Nobody ever photocopies the book; your fingers just never stop on emptiness.</div>
+<div class="callout hook"><span class="ct">🎯 Key Insight</span>Settle-before-answer is THE iterator idiom: normalisation lives in ONE private helper both methods call, so invariant drift becomes impossible. Work skipped today is charged tomorrow — hence amortised.</div>`});
 
 /* Problem 384 */
 B.spread(
