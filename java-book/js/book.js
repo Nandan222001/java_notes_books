@@ -4,6 +4,8 @@
 var $ = function (s) { return document.querySelector(s); };
 var BOOK = window.BOOK, HL = window.HL, Snd = window.BookSound;
 var bookEl = $('#book'), wrapEl = $('#bookWrap'), panEl = $('#bookPan');
+var SRC = window.BOOK_SRC || null;
+var REMOTE = !!(SRC && SRC.remote);   /* true → spread HTML streams from Supabase */
 
 /* ---------------- cover & back cover ---------------- */
 var COVER = { raw: true, cls: 'cover', html:
@@ -89,20 +91,35 @@ function faceHTML(p, side) {
    leaf/face shells for all sheets (needed for correct z-index stacking) but only
    fill in real HTML + highlighting for sheets near where the reader actually is. */
 var hydrated = [];
-function hydrateLeaf(i) {
-  if (i < 0 || i >= N || hydrated[i]) return;
-  hydrated[i] = true;
+function paintLeaf(i) {
   var leaf = leaves[i], fr = leaf.firstChild, bk = leaf.lastChild;
   fr.innerHTML = faceHTML(pages[2 * i], 'front');
   bk.innerHTML = faceHTML(pages[2 * i + 1], 'back');
   HL.decorate(fr); HL.decorate(bk);
+}
+function hydrateLeaf(i) {
+  if (i < 0 || i >= N || hydrated[i]) return;
+  /* local mode & pre-filled spreads (TOC injects spread 1): render at once */
+  if (!REMOTE || (pages[2*i] && pages[2*i].html) || (pages[2*i+1] && pages[2*i+1].html)) {
+    hydrated[i] = true; paintLeaf(i); return;
+  }
+  hydrated[i] = 'pending';                    /* de-dupe until data lands */
+  SRC.requestSpread(i - 1).then(function (sp) {   /* leaf i front/back = spread i-1 */
+    if (!sp) { hydrated[i] = false; return; } /* failed → retry on next pass */
+    pages[2*i]     = { kicker: sp.l.kicker, head: sp.l.head, html: sp.l.html, num: 2*i };
+    pages[2*i + 1] = { kicker: sp.r.kicker, head: sp.r.head, html: sp.r.html, num: 2*i+1 };
+    hydrated[i] = true; paintLeaf(i);
+  }).catch(function () { hydrated[i] = false; });
 }
 var HYDRATE_RADIUS = 4;
 function ensureHydrated(center, radius) {
   var r = radius == null ? HYDRATE_RADIUS : radius;
   for (var k = center - r; k <= center + r; k++) hydrateLeaf(k);
 }
+/* remote mode: neighbouring fetches already cover prefetching; walking the whole
+   book in idle time would defeat the on-demand payload we're optimising for */
 function idleHydrateRest() {
+  if (REMOTE) return;
   var i = 0;
   function schedule(cb) {
     if (window.requestIdleCallback) requestIdleCallback(cb, { timeout: 1200 });
@@ -419,8 +436,36 @@ function doSearch(qRaw) {
 }
 searchBox.addEventListener('input', function () {
   clearTimeout(searchBox._t);
-  searchBox._t = setTimeout(function () { doSearch(searchBox.value); }, 160);
+  searchBox._t = setTimeout(function () {
+    if (REMOTE) remoteSearch(searchBox.value);
+    else doSearch(searchBox.value);
+  }, 160);
 });
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
+/* server-side FTS via the search_spreads RPC — no client-side text index */
+function remoteSearch(qRaw) {
+  var q = qRaw.trim();
+  if (q.length < 2) { closeSearch(); return; }
+  SRC.search(q).then(function (list) {
+    var out = '';
+    list.forEach(function (h) {
+      var snip = h.txt.replace(/\s+/g, ' ').trim().slice(0, 150)
+                      .replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      out += '<button class="sr-item" data-flips="' + h.flips +
+             '"><b>p.' + h.num + '</b> …' + snip + '…</button>';
+    });
+    searchRes.innerHTML = out ||
+      '<div class="sr-empty">No matches in the book 🤷‍♂️</div>';
+    searchRes.hidden = false;
+    void esc; /* kept for future snippet paths */
+  }).catch(function () {
+    searchRes.innerHTML =
+      '<div class="sr-empty">Search backend unreachable</div>';
+    searchRes.hidden = false;
+  });
+}
 searchBox.addEventListener('keydown', function (e) {
   if (e.key === 'Enter') {
     var first = searchRes.querySelector('[data-flips]');

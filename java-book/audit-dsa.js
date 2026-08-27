@@ -9,7 +9,7 @@ const base = ['registry.js','c00-front.js','c01-foundations.js','c02-oop.js','c0
  'c04-java8-concurrency.js','c05-jvm-io.js','c06-solid-patterns-lld.js',
  'c07-spring-rest-jpa.js','c08-microservices.js','c09-data-hld.js','c10-devops-cloud.js'];
 
-const idxHtml = fs.readFileSync('index.html', 'utf8');
+const idxHtml = fs.readFileSync('js/boot.js', 'utf8');   /* boot.js owns the content-file list */
 const dsaFiles = [...idxHtml.matchAll(/js\/content\/(c12-dsa-[\w-]+\.js)/g)].map(m => m[1]);
 if (dsaFiles.length < 24) throw new Error('expected at least 24 dsa files, found ' + dsaFiles.length);
 
