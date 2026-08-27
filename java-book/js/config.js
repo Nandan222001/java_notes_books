@@ -1,10 +1,15 @@
-/* Supabase content backend — fill in YOUR project values and set enabled:true.
- * The ANON key is public-safe (RLS allows read-only). NEVER put the
- * service-role key here; that one stays inside supabase/migrate.mjs runs.
- * With enabled:false (or when offline/unreachable) the book transparently
- * falls back to the bundled js/content files. */
+/* Supabase content backend.
+ * YOUR PROJECT URL is prefilled. Remaining steps:
+ *   1) Project Settings → API → copy the "anon public" key → paste below
+ *   2) run:  node supabase/migrate.mjs --dburi "postgresql://…/postgres"
+ *      (from java-book/, after  npm i pg  one time)
+ *   3) flip enabled to true, deploy
+ * The anon key is public-safe (RLS allows read-only). NEVER put the
+ * service-role key or the database password here. With enabled:false,
+ * unreachable server, or file:// protocol, the book transparently falls
+ * back to the bundled js/content files. */
 window.BOOK_DB = {
   enabled: false,
-  url: '',            // e.g. 'https://abcd1234.supabase.co'
-  anonKey: ''         // Project Settings → API → anon/public
+  url: 'https://xddhhybyviuntnnymfbo.supabase.co',
+  anonKey: ''         // ← paste your anon/public key here
 };
